@@ -78,7 +78,7 @@
                 <h1 class="text-4xl font-bold mb-4">
                     <i class="fas fa-brain mr-3"></i>ExperienceMaker
                 </h1>
-                <p class="text-xl opacity-90" id="header-subtitle">Discover and explore curated AI agent experiences</p>
+                <p class="text-xl opacity-90" id="header-subtitle">Empowering agents to learn from the past and excel in the future</p>
                 <div class="mt-6 flex justify-center items-center space-x-4 text-sm">
                     <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">
                         <i class="fas fa-database mr-1"></i>
@@ -246,8 +246,8 @@
         <div class="container mx-auto px-6 text-center text-gray-600">
             <p>
                 <i class="fas fa-code mr-2"></i>
-                Built with ❤️ for the AI community •
-                <a href="https://github.com/Dengjiaji/agent.exe" class="text-blue-500 hover:text-blue-600">
+                Built for AI agent experience generation and reuse •
+                <a href="https://github.com/modelscope/ExperienceMaker" class="text-blue-500 hover:text-blue-600">
                     View on GitHub
                 </a>
             </p>
@@ -261,8 +261,8 @@
         let currentLibrary = null;
 
         // GitHub API configuration
-        const GITHUB_USER = 'Dengjiaji';
-        const REPO_NAME = 'agent.exe';
+        const GITHUB_USER = 'modelscope';
+        const REPO_NAME = 'ExperienceMaker';
         const EXPERIENCE_FOLDER = 'experience_library';
 
         // DOM elements
@@ -390,7 +390,7 @@
             currentView = 'libraries';
             currentLibrary = null;
             breadcrumbEl.classList.add('hidden');
-            headerSubtitleEl.textContent = 'Discover and explore curated AI agent experiences';
+            headerSubtitleEl.textContent = 'Empowering agents to learn from the past and excel in the future';
             searchInput.placeholder = 'Search libraries...';
 
             displayLibraries();
