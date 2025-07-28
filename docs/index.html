@@ -151,7 +151,7 @@
             <p>
                 <i class="fas fa-code mr-2"></i>
                 Built with ❤️ for the AI community •
-                <a href="https://github.com/Dengjiaji/experiencemaker" class="text-blue-500 hover:text-blue-600">
+                <a href="https://github.com/your-username/experiencemaker" class="text-blue-500 hover:text-blue-600">
                     View on GitHub
                 </a>
             </p>
@@ -164,8 +164,8 @@
         let activeTags = new Set();
 
         // GitHub API configuration
-        const GITHUB_USER = 'Dengjiaji';  // 替换为你的GitHub用户名
-        const REPO_NAME = 'agent.exe';   // 替换为你的仓库名
+        const GITHUB_USER = 'Dengjiaji';  // 你的GitHub用户名
+        const REPO_NAME = 'agent.exe';     // 你的仓库名
         const EXPERIENCE_FOLDER = 'experience_library';
 
         // DOM elements
@@ -193,49 +193,71 @@
             try {
                 showLoading();
 
-                // Get list of files in experience_library folder
-                const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/${EXPERIENCE_FOLDER}`);
+                // 直接使用 raw.githubusercontent.com 访问文件，避免 API 限制
+                const baseUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main/${EXPERIENCE_FOLDER}`;
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                // 已知的 JSONL 文件列表（需要手动维护）
+                const knownFiles = [
+                    'appworld_v1.jsonl',
+                    // 在这里添加你的其他 JSONL 文件名
+                ];
 
-                const files = await response.json();
-                const jsonlFiles = files.filter(file => file.name.endsWith('.jsonl'));
+                console.log('开始加载经验库文件...');
 
-                if (jsonlFiles.length === 0) {
-                    throw new Error('No JSONL files found in experience_library folder');
-                }
+                // 并行加载所有已知文件
+                const experiencePromises = knownFiles.map(async (fileName) => {
+                    try {
+                        const fileUrl = `${baseUrl}/${fileName}`;
+                        console.log(`加载文件: ${fileUrl}`);
 
-                // Load and parse all JSONL files
-                const experiencePromises = jsonlFiles.map(async (file) => {
-                    const fileResponse = await fetch(file.download_url);
-                    const content = await fileResponse.text();
+                        const fileResponse = await fetch(fileUrl);
 
-                    const experiences = content
-                        .split('\n')
-                        .filter(line => line.trim())
-                        .map(line => {
-                            try {
-                                const experience = JSON.parse(line);
-                                experience._library = file.name.replace('.jsonl', '');
-                                return experience;
-                            } catch (e) {
-                                console.warn('Failed to parse line:', line);
-                                return null;
-                            }
-                        })
-                        .filter(exp => exp !== null);
+                        if (!fileResponse.ok) {
+                            console.warn(`文件 ${fileName} 加载失败: ${fileResponse.status}`);
+                            return [];
+                        }
 
-                    return experiences;
+                        const content = await fileResponse.text();
+                        console.log(`文件 ${fileName} 加载成功, 大小: ${content.length} 字符`);
+
+                        const experiences = content
+                            .split('\n')
+                            .filter(line => line.trim())
+                            .map(line => {
+                                try {
+                                    const experience = JSON.parse(line);
+                                    experience._library = fileName.replace('.jsonl', '');
+                                    return experience;
+                                } catch (e) {
+                                    console.warn('解析失败的行:', line.substring(0, 100));
+                                    return null;
+                                }
+                            })
+                            .filter(exp => exp !== null);
+
+                        console.log(`文件 ${fileName} 解析出 ${experiences.length} 条经验`);
+                        return experiences;
+
+                    } catch (error) {
+                        console.error(`加载文件 ${fileName} 时出错:`, error);
+                        return [];
+                    }
                 });
 
                 const experienceArrays = await Promise.all(experiencePromises);
                 allExperiences = experienceArrays.flat();
 
-                // Update stats
+                console.log(`总共加载了 ${allExperiences.length} 条经验`);
+
+                if (allExperiences.length === 0) {
+                    throw new Error('没有成功加载任何经验数据');
+                }
+
+                // 更新统计数据
                 totalExperiencesEl.textContent = allExperiences.length;
-                totalLibrariesEl.textContent = jsonlFiles.length;
+                totalLibrariesEl.textContent = knownFiles.filter(fileName => {
+                    return allExperiences.some(exp => exp._library === fileName.replace('.jsonl', ''));
+                }).length;
 
                 // Generate tags
                 generateTagsFilter();
